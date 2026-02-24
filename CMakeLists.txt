@@ -132,13 +132,13 @@ find_package(Git QUIET)
 if(GIT_FOUND)
     execute_process(
         COMMAND ${GIT_EXECUTABLE} rev-parse --short HEAD
-        WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+        WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
         OUTPUT_VARIABLE GIT_COMMIT_HASH
         OUTPUT_STRIP_TRAILING_WHITESPACE
     )
     execute_process(
         COMMAND ${GIT_EXECUTABLE} diff --quiet
-        WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+        WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
         RESULT_VARIABLE GIT_DIFF_RESULT
     )
     if(GIT_DIFF_RESULT EQUAL 0)
@@ -153,11 +153,11 @@ else()
 endif()
 set(FINAL_GIT_VERSION "${GIT_COMMIT_HASH}${GIT_DIRTY}")
 configure_file(
-    ${CMAKE_SOURCE_DIR}/utils/vp_version.h.in
-    ${CMAKE_BINARY_DIR}/vp_version.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/utils/vp_version.h.in
+    ${CMAKE_CURRENT_BINARY_DIR}/vp_version.h
     @ONLY
 )
-include_directories(${CMAKE_BINARY_DIR})
+include_directories(${CMAKE_CURRENT_BINARY_DIR})
 message(STATUS "version info:")
 message(STATUS "    build_time: ${BUILD_TIME}")
 message(STATUS "    commit_hash: ${FINAL_GIT_VERSION}")
