@@ -5,6 +5,7 @@
 #include <string>
 #include <vector>
 #include <regex>
+#include <cstdio>
 #include <opencv2/imgproc.hpp>
 
 // https://github.com/HowardHinnant/date/blob/master/include/date/date.h
@@ -18,10 +19,9 @@ namespace vp_utils {
     template<typename ... Args>
     inline string string_format(const string& format, Args ... args){
         size_t size = 1 + snprintf(nullptr, 0, format.c_str(), args ...); 
-        // unique_ptr<char[]> buf(new char[size]);
-        char bytes[size];
-        snprintf(bytes, size, format.c_str(), args ...);
-        return string(bytes);
+        std::vector<char> bytes(size);
+        snprintf(bytes.data(), size, format.c_str(), args ...);
+        return string(bytes.data());
     }
 
     // get optimal font scale depend on screen width and height

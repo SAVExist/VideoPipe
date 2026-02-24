@@ -11,6 +11,10 @@ project(video_pipe VERSION 1.0)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_BUILD_TYPE Debug)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -fPIC -w -fdiagnostics-color=always -pthread")
+# MSVC compatibility: allow deprecated experimental::filesystem for now.
+if(MSVC)
+    add_definitions(-D_SILENCE_EXPERIMENTAL_FILESYSTEM_DEPRECATION_WARNING)
+endif()
 # save all libs(including third_party's) to 'libs'
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/libs)
 
@@ -33,18 +37,21 @@ include_directories(${OpenCV_INCLUDE_DIRS})
 
 # Gstreamer required
 include(FindPkgConfig)
-pkg_check_modules(GST   REQUIRED gstreamer-1.0)
-pkg_check_modules(GSTAPP REQUIRED gstreamer-app-1.0)
-pkg_check_modules(GST_RTSP REQUIRED gstreamer-rtsp-server-1.0)
+pkg_check_modules(GST REQUIRED IMPORTED_TARGET gstreamer-1.0)
+pkg_check_modules(GSTAPP REQUIRED IMPORTED_TARGET gstreamer-app-1.0)
+pkg_check_modules(GST_RTSP REQUIRED IMPORTED_TARGET gstreamer-rtsp-server-1.0)
 message(STATUS "GStreamer library status:")
 message(STATUS "    version: ${GST_VERSION}")
 message(STATUS "    libraries: ${GST_LIBRARIES} ${GSTAPP_LIBRARIES} ${GST_RTSP_LIBRARIES}")
 message(STATUS "    include path: ${GST_INCLUDE_DIRS}")
 include_directories(${GST_INCLUDE_DIRS})
-set (GST_DEPEND_LIBS ${GST_LIBRARIES} ${GSTAPP_LIBRARIES} ${GST_RTSP_LIBRARIES})
+set (GST_DEPEND_LIBS PkgConfig::GST PkgConfig::GSTAPP PkgConfig::GST_RTSP)
 
 # collect dependent libs for videopipe
-list(APPEND VP_DEPEND_LIBS ${OpenCV_LIBS} ${GST_DEPEND_LIBS} stdc++fs)
+list(APPEND VP_DEPEND_LIBS ${OpenCV_LIBS} ${GST_DEPEND_LIBS})
+if(NOT MSVC)
+    list(APPEND VP_DEPEND_LIBS stdc++fs)
+endif()
 
 # optional for CUDA
 if(VP_WITH_CUDA) # CUDA enabled
@@ -162,10 +169,17 @@ file(GLOB_RECURSE OBJECTS "objects/*.cpp")
 file(GLOB_RECURSE UTILS "utils/*.cpp")
 #...#
 list(APPEND VP_CPPS_SOURCES ${NODES} ${OBJECTS} ${UTILS})
+find_path(OPENCV_FREETYPE_HEADER "opencv2/freetype.hpp" PATHS ${OpenCV_INCLUDE_DIRS})
+if(NOT OPENCV_FREETYPE_HEADER)
+    message(WARNING "OpenCV freetype module not found; excluding OSD nodes from build.")
+    list(FILTER VP_CPPS_SOURCES EXCLUDE REGEX ".*/nodes/osd/.*\\.cpp$")
+endif()
 
 # build for videopipe
 add_library(${PROJECT_NAME} SHARED ${VP_CPPS_SOURCES})
 target_link_libraries(${PROJECT_NAME} ${VP_DEPEND_LIBS})
 
 # build for samples
-add_subdirectory(samples)
+if(NOT MSVC)
+    add_subdirectory(samples)
+endif()
