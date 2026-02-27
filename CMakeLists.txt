@@ -18,6 +18,12 @@ endif()
 # save all libs(including third_party's) to 'libs'
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/libs)
 
+# optional: build as static lib (e.g. when used as submodule and linking into one exe; avoids Windows DLL export issues).
+if(NOT DEFINED VIDEO_PIPE_BUILD_SHARED)
+  set(VIDEO_PIPE_BUILD_SHARED ON)
+endif()
+option(VIDEO_PIPE_BUILD_SHARED "Build VideoPipe as SHARED library (OFF = STATIC)" ${VIDEO_PIPE_BUILD_SHARED})
+
 # optional for build, modify values when configure the project using 'cmake -DVP_WITH_CUDA=OFF ..'
 option(VP_WITH_CUDA "prepared CUDA or not?" OFF)
 option(VP_WITH_TRT "prepared TensorRT or not?" OFF)
@@ -176,7 +182,11 @@ if(NOT OPENCV_FREETYPE_HEADER)
 endif()
 
 # build for videopipe
-add_library(${PROJECT_NAME} SHARED ${VP_CPPS_SOURCES})
+if(VIDEO_PIPE_BUILD_SHARED)
+  add_library(${PROJECT_NAME} SHARED ${VP_CPPS_SOURCES})
+else()
+  add_library(${PROJECT_NAME} STATIC ${VP_CPPS_SOURCES})
+endif()
 target_link_libraries(${PROJECT_NAME} ${VP_DEPEND_LIBS})
 
 # build for samples

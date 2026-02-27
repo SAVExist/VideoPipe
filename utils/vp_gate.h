@@ -22,7 +22,7 @@ namespace vp_utils {
         // wait until opened
         void knock() {
             std::unique_lock<std::mutex> lock(mutex_);
-            cv_.wait(lock, [=] { return opened_; });
+            cv_.wait(lock, [this] { return opened_; });
         }
 
         void close() {
