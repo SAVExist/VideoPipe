@@ -7,6 +7,7 @@
 #include <chrono>
 #include <assert.h>
 #include <map>
+#include <functional>
 
 #include "../vp_semaphore.h"
 #include "../vp_utils.h"
@@ -102,6 +103,10 @@ namespace vp_utils {
         bool include_code_location = true;            // `log from` part in log content
         bool include_thread_id = true;                // 'thread id' part in log content
         // END of CONFIG
+
+        // External callback invoked after level filter, before VP formatting.
+        // Receives raw (level, message) — no timestamps/thread IDs.
+        std::function<void(vp_log_level, const std::string&)> log_callback;
 
         // better Never call directly
         void log(vp_log_level level, const std::string& message, const char* code_file, int code_line);

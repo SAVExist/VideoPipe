@@ -63,6 +63,10 @@ namespace vp_utils {
                 return;
             }
         }
+
+        if (log_callback) {
+            log_callback(level, message);
+        }
         
         /* create log */
         std::string new_log = "";
