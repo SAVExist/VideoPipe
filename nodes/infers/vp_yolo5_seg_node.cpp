@@ -37,7 +37,10 @@ namespace vp_nodes {
         // the first dim is number of batch, MUST be 1
         assert(blob_to_infer.dims == 4);
         assert(blob_to_infer.size[0] == 1);
-        assert(!net.empty());
+        if (net.empty()) {
+            VP_ERROR(vp_utils::string_format("[%s] net is empty, model was not loaded; skipping inference.", node_name.c_str()));
+            return;
+        }
 
         net.setInput(blob_to_infer);
         net.forward(raw_outputs, net.getUnconnectedOutLayersNames());

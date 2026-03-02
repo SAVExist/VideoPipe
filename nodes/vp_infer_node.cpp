@@ -96,8 +96,11 @@ namespace vp_nodes {
         // blob_to_infer is a 4D matrix
         // the first dim is number of batch
         assert(blob_to_infer.dims == 4);
-        assert(!net.empty());
-        
+        if (net.empty()) {
+            VP_ERROR(vp_utils::string_format("[%s] net is empty, model was not loaded; skipping inference.", node_name.c_str()));
+            return;
+        }
+
         auto number_of_batch = blob_to_infer.size[0];
         if (number_of_batch <= batch_size) {
             // infer one time directly

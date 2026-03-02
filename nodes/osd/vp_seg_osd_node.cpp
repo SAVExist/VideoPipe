@@ -1,6 +1,8 @@
+#include <algorithm>
 #include <fstream>
 #include "vp_seg_osd_node.h"
 #include "../../utils/vp_utils.h"
+#include "../../utils/logger/vp_logger.h"
 
 namespace vp_nodes {
         
@@ -8,25 +10,31 @@ namespace vp_nodes {
         // load classes names if possible
         if (!classes_file.empty()) {
             std::ifstream ifs(classes_file.c_str());
-            assert(ifs.is_open());
-            std::string line;
-            while (std::getline(ifs, line)) {
-                classes.push_back(line);
+            if (ifs.is_open()) {
+                std::string line;
+                while (std::getline(ifs, line)) {
+                    classes.push_back(line);
+                }
+                ifs.close();
+            } else {
+                VP_WARN(vp_utils::string_format("[%s] Cannot open classes file: %s", node_name.c_str(), classes_file.c_str()));
             }
-            ifs.close();
         }
 
         // load colors if possible
         if (!colors_file.empty()) {
             std::ifstream ifs(colors_file.c_str());
-            assert(ifs.is_open());
-            std::string line;
-            while (std::getline(ifs, line)) {
-                auto color_s = vp_utils::string_split(line, ',');
-                cv::Vec3b color(static_cast<uchar>(std::stoi(color_s[0])), static_cast<uchar>(std::stoi(color_s[1])), static_cast<uchar>(std::stoi(color_s[2])));
-                colors.push_back(color);
+            if (ifs.is_open()) {
+                std::string line;
+                while (std::getline(ifs, line)) {
+                    auto color_s = vp_utils::string_split(line, ',');
+                    cv::Vec3b color(static_cast<uchar>(std::stoi(color_s[0])), static_cast<uchar>(std::stoi(color_s[1])), static_cast<uchar>(std::stoi(color_s[2])));
+                    colors.push_back(color);
+                }
+                ifs.close();
+            } else {
+                VP_WARN(vp_utils::string_format("[%s] Cannot open colors file: %s", node_name.c_str(), colors_file.c_str()));
             }
-            ifs.close();
         }
 
         this->initialized();
@@ -85,7 +93,11 @@ namespace vp_nodes {
             }
         }
 
-        assert(colors.size() == chns);
+        if (static_cast<int>(colors.size()) != chns) {
+            segm.create(rows, cols, CV_8UC3);
+            segm.setTo(Vec3b(0, 0, 0));
+            return;
+        }
 
         Mat maxCl = Mat::zeros(rows, cols, CV_8UC1);
         Mat maxVal(rows, cols, CV_32FC1, score.data);
@@ -115,10 +127,12 @@ namespace vp_nodes {
 
     void vp_seg_osd_node::showLegend(cv::Mat& board) {
         using namespace cv;
-        auto kBlockHeight = 30;
-        const int numClasses = (int)classes.size();
+        const int kBlockHeight = 30;
+        const int numClasses = static_cast<int>(classes.size());
+        const int maxClassesFit = board.rows / kBlockHeight;
+        const int drawCount = std::min(numClasses, maxClassesFit);
 
-        for (int i = 0; i < numClasses; i++) {
+        for (int i = 0; i < drawCount; i++) {
             Mat block = board.rowRange(i * kBlockHeight, (i + 1) * kBlockHeight);
             block.setTo(colors[i]);
             putText(block, classes[i], Point(0, kBlockHeight / 2), FONT_HERSHEY_SIMPLEX, 0.5, Vec3b(255, 255, 255));

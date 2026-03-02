@@ -94,6 +94,8 @@ namespace vp_nodes {
         // re-implementation for batch by batch mode, marked as 'final' as we need not override any more in specific derived classes.
         virtual void handle_frame_meta(const std::vector<std::shared_ptr<vp_objects::vp_frame_meta>>& meta_with_batch) override final; 
     public:
+        /** Returns true if the DNN model was loaded successfully (cv::dnn::readNet succeeded). */
+        bool isNetLoaded() const { return !net.empty(); }
         ~vp_infer_node();
     };
 }
