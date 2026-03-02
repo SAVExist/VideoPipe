@@ -12,10 +12,7 @@ namespace vp_nodes {
         /* init net*/
         restoration_net = cv::dnn::readNetFromONNX(realesrgan_bg_restoration_model);
         /* to-do, load face restoration model*/
-        #ifdef VP_WITH_CUDA
-        //restoration_net.setPreferableBackend(cv::dnn::DNN_BACKEND_CUDA);
-        //restoration_net.setPreferableTarget(cv::dnn::DNN_TARGET_CUDA);
-        #endif
+        applyDnnBackend(restoration_net);
         this->initialized();
     }
     

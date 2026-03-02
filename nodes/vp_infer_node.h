@@ -19,7 +19,14 @@ namespace vp_nodes {
     // the class is based on opencv::dnn module which is the default way for all deep learning inference in code, 
     // we can implement it using other backends such as tensorrt with cuda acceleration, see vp_ppocr_text_detector_node which is based on PaddlePaddle dl framework from BaiDu corporation.
     class vp_infer_node: public vp_node {
+    public:
+        static void setGlobalDnnBackend(int backend, int target);
+        static int  globalDnnBackend();
+        static int  globalDnnTarget();
+        static void applyDnnBackend(cv::dnn::Net& net);
     private:
+        static int s_dnnBackend;
+        static int s_dnnTarget;
         // load labels if need
         void load_labels();
     protected:

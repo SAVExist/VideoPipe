@@ -4,6 +4,25 @@
 #include "vp_infer_node.h"
 
 namespace vp_nodes {
+
+    int vp_infer_node::s_dnnBackend = cv::dnn::DNN_BACKEND_DEFAULT;
+    int vp_infer_node::s_dnnTarget  = cv::dnn::DNN_TARGET_CPU;
+
+    void vp_infer_node::setGlobalDnnBackend(int backend, int target) {
+        s_dnnBackend = backend;
+        s_dnnTarget  = target;
+    }
+
+    int vp_infer_node::globalDnnBackend() { return s_dnnBackend; }
+    int vp_infer_node::globalDnnTarget()  { return s_dnnTarget; }
+
+    void vp_infer_node::applyDnnBackend(cv::dnn::Net& net) {
+        if (s_dnnBackend != cv::dnn::DNN_BACKEND_DEFAULT) {
+            net.setPreferableBackend(s_dnnBackend);
+            net.setPreferableTarget(s_dnnTarget);
+        }
+    }
+
     vp_infer_node::vp_infer_node(std::string node_name, 
                             vp_infer_type infer_type, 
                             std::string model_path, 
@@ -34,10 +53,7 @@ namespace vp_nodes {
         // failing means maybe it has a custom implementation for model loading in derived class such as using other backends other than opencv::dnn.
         try {
             net = cv::dnn::readNet(model_path, model_config_path);
-            #ifdef VP_WITH_CUDA
-            net.setPreferableBackend(cv::dnn::DNN_BACKEND_CUDA);
-            net.setPreferableTarget(cv::dnn::DNN_TARGET_CUDA);
-            #endif
+            applyDnnBackend(net);
         }
         catch(const std::exception& e) {
             VP_WARN(vp_utils::string_format("[%s] cv::dnn::readNet load network failed!", node_name.c_str()));

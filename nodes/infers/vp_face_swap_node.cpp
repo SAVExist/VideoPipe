@@ -21,14 +21,9 @@ namespace vp_nodes {
         face_extract_net = cv::dnn::readNetFromONNX(yunet_face_detect_model);
         face_encoding_net = cv::dnn::readNetFromONNX(buffalo_l_face_encoding_model);
         face_swap_net = cv::dnn::readNetFromONNX(insightface_swap_model);
-        #ifdef VP_WITH_CUDA
-        face_extract_net.setPreferableBackend(cv::dnn::DNN_BACKEND_CUDA);
-        face_extract_net.setPreferableTarget(cv::dnn::DNN_TARGET_CUDA);
-        face_encoding_net.setPreferableBackend(cv::dnn::DNN_BACKEND_CUDA);
-        face_encoding_net.setPreferableTarget(cv::dnn::DNN_TARGET_CUDA);
-        face_swap_net.setPreferableBackend(cv::dnn::DNN_BACKEND_CUDA);
-        face_swap_net.setPreferableTarget(cv::dnn::DNN_TARGET_CUDA);
-        #endif
+        applyDnnBackend(face_extract_net);
+        applyDnnBackend(face_encoding_net);
+        applyDnnBackend(face_swap_net);
         init_source_face_embeddings(swap_source_image, swap_source_face_index, emap_file_for_embeddings);
         this->initialized();
     }
