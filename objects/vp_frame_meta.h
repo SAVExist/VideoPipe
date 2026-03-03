@@ -46,6 +46,9 @@ namespace vp_objects {
         // fps for current video.
         int fps;
 
+        // PTS of the frame in seconds (-1 if unknown).
+        double pts_seconds = -1.0;
+
         // orignal frame width, fiiled by src nodes.
         int original_width;
         // original frame height, filled by src nodes.
