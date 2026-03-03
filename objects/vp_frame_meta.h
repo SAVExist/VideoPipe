@@ -1,5 +1,6 @@
 #pragma once
 
+#include <cstdint>
 #include <vector>
 #include <opencv2/core/core.hpp>
 #include <opencv2/highgui/highgui.hpp>
@@ -48,6 +49,9 @@ namespace vp_objects {
 
         // PTS of the frame in seconds (-1 if unknown).
         double pts_seconds = -1.0;
+
+        // Real frame number in the video file (from PTS); -1 if unknown.
+        int64_t video_frame_number = -1;
 
         // orignal frame width, fiiled by src nodes.
         int original_width;
